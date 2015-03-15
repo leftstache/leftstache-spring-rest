@@ -1,5 +1,6 @@
 package com.leftstache.spring.rest;
 
+import com.leftstache.spring.rest.annotation.*;
 import org.springframework.beans.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.beans.factory.config.*;
