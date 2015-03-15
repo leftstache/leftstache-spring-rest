@@ -1,4 +1,4 @@
-package com.leftstache.spring.rest.annotation;
+package com.leftstache.spring.rest.core;
 
 import java.io.*;
 import java.lang.annotation.*;

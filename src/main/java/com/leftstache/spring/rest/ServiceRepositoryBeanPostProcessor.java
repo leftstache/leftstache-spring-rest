@@ -1,6 +1,6 @@
 package com.leftstache.spring.rest;
 
-import com.leftstache.spring.rest.annotation.*;
+import com.leftstache.spring.rest.core.*;
 import org.springframework.beans.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.beans.factory.config.*;
@@ -43,7 +43,7 @@ public class ServiceRepositoryBeanPostProcessor implements BeanPostProcessor {
 			} else {
 				Service serviceAnnotation = beanType.getAnnotation(Service.class);
 				if(serviceAnnotation != null) {
-					registerService(name, type, idType, bean);
+					registerService(type, idType, bean);
 				}
 			}
 		}
@@ -69,8 +69,8 @@ public class ServiceRepositoryBeanPostProcessor implements BeanPostProcessor {
 		serviceRepositoryStore.registerRepository(entityType, idType, name, bean);
 	}
 
-	private void registerService(String name, Class<?> entityType, Class<? extends Serializable> idType, Object bean) {
-		serviceRepositoryStore.registerService(entityType, name, bean);
+	private void registerService(Class<?> entityType, Class<? extends Serializable> idType, Object bean) {
+		serviceRepositoryStore.registerService(entityType, bean);
 	}
 
 	@Override

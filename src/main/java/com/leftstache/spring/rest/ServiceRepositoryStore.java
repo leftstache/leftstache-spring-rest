@@ -12,7 +12,7 @@ import java.util.*;
 @Component
 public class ServiceRepositoryStore {
 	private Map<Class<?>, PagingAndSortingRepository<?, ?>> typeToRepository = new HashMap<>();
-	private Map<Class<?>, ServiceWrapper> typeToService = new HashMap<>();
+	private Map<Class<?>, Object> typeToService = new HashMap<>();
 	private Map<Class<?>, String> typeToName = new HashMap<>();
 	private Map<String, Class<?>> nameToType = new HashMap<>();
 	private Map<String, Class<? extends Serializable>> nameToIdType = new HashMap<>();
@@ -23,9 +23,8 @@ public class ServiceRepositoryStore {
 		typeToRepository.put(entityType, repository);
 	}
 
-	public void registerService(Class<?> entityType, String name, Object service) {
-		ServiceWrapper serviceWrapper = new ServiceWrapper(this, name, service);
-		typeToService.put(entityType, serviceWrapper);
+	public void registerService(Class<?> entityType, Object service) {
+		typeToService.put(entityType, service);
 	}
 
 	private void addNameTypeRelationship(Class<?> entityType, Class<? extends Serializable> idType, String name) {
