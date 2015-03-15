@@ -1,28 +1,23 @@
 package com.leftstache.spring.rest.core;
 
+import com.leftstache.spring.rest.util.*;
+
+import java.beans.*;
 import java.io.*;
-import java.lang.annotation.*;
 
 /**
  * @author Joel Johnson
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface Restful {
-	/**
-	 * If on a Repository, the name of the base path that should be exposed via rest. Typically the name of the entity being served.
-	 * If on a @Service, the name used on the corresponding Repository.
-	 */
-	String name() default "";
+public interface Restful<ENTITY, ID extends Serializable> {
+	default String getRestfulName() {
+		return Introspector.decapitalize(getEntityType().getSimpleName());
+	}
 
-	/**
-	 * The type of the entity
-	 */
-	Class<?> entity();
+	default Class<ENTITY> getEntityType() {
+		return ReflectionUtil.findGenericType(this.getClass(), CreateLogic.class, 0);
+	}
 
-	/**
-	 * The type of the ID of the entity. Required for Services or Repositories with Get functionality.
-	 */
-	Class<? extends Serializable> id() default Long.class;
+	default Class<ID> getIdType() {
+		return ReflectionUtil.findGenericType(this.getClass(), CreateLogic.class, 1);
+	}
 }

@@ -29,36 +29,11 @@ public class RepositoryPostProcessor implements BeanPostProcessor {
 			return null;
 		}
 
-		if(bean instanceof PagingAndSortingRepository) {
-			Class<?> beanType = bean.getClass();
-			Restful restfulAnnotation = getRestfulAnnotation(beanType);
-			if (restfulAnnotation != null) {
-				Class<?> type = restfulAnnotation.entity();
-				Class<? extends Serializable> idType = restfulAnnotation.id();
-				String name = restfulAnnotation.name();
-				if (name.isEmpty()) {
-					name = type.getClass().getSimpleName();
-				}
-
-				repositoryStore.registerRepository(type, idType, name, (PagingAndSortingRepository<?, ?>) bean);
-			}
+		if(bean instanceof PagingAndSortingRepository && bean instanceof Restful) {
+			repositoryStore.registerRepository((Restful)bean);
 		}
-
+		
 		return bean;
-	}
-
-	private Restful getRestfulAnnotation(Class<?> beanType) {
-		Restful annotation = beanType.getAnnotation(Restful.class);
-		if(annotation == null) {
-			Class<?>[] interfaces = beanType.getInterfaces();
-			for (Class<?> anInterface : interfaces) {
-				annotation = anInterface.getAnnotation(Restful.class);
-				if(annotation != null) {
-					break;
-				}
-			}
-		}
-		return annotation;
 	}
 
 	@Override
