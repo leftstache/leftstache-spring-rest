@@ -17,12 +17,10 @@ import java.io.*;
 @Component
 public class RepositoryPostProcessor implements BeanPostProcessor {
 	private final RepositoryStore repositoryStore;
-	private final ServiceStore serviceStore;
 
 	@Autowired
-	public RepositoryPostProcessor(RepositoryStore repositoryStore, ServiceStore serviceStore) {
+	public RepositoryPostProcessor(RepositoryStore repositoryStore) {
 		this.repositoryStore = repositoryStore;
-		this.serviceStore = serviceStore;
 	}
 
 	@Override
