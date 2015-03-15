@@ -3,6 +3,7 @@ package com.leftstache.spring.rest.store;
 import com.leftstache.spring.rest.core.*;
 import org.springframework.stereotype.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,7 +31,7 @@ public class ServiceStore {
 		return entityTypeMap.get(name);
 	}
 
-	public <T> CreateLogic<T> getCreateLogic(String name) {
+	public <E, I extends Serializable> CreateLogic<E, I> getCreateLogic(String name) {
 		return createLogicMap.get(name);
 	}
 

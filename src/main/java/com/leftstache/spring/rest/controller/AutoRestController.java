@@ -46,7 +46,7 @@ public class AutoRestController {
 		Class<?> repoType = repositoryStore.getEntityType(name);
 		Object object = objectMapper.convertValue(requestBody, repoType);
 
-		CreateLogic<Object> createLogic = serviceStore.getCreateLogic(name);
+		CreateLogic<Object, Serializable> createLogic = serviceStore.getCreateLogic(name);
 		if(createLogic != null) {
 			return createLogic.createLogic(object);
 		} else {
