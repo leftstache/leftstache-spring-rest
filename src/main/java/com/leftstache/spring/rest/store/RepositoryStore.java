@@ -32,7 +32,7 @@ public class RepositoryStore {
 	}
 
 	public Class getIdType(String name) {
-		return entityTypeMap.get(name);
+		return idTypeMap.get(name);
 	}
 
 	public <ENTITY, ID extends Serializable> PagingAndSortingRepository<ENTITY, ID> getRepository(String name) {
