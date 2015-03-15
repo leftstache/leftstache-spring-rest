@@ -14,5 +14,5 @@ public interface CreateLogic<ENTITY, ID extends Serializable> extends Restful<EN
 	 * @param object The object to be persisted. It is expected that the implementation of this method saves this object.
 	 * @return The final state of the persisted object. This will be returned to the API after it is called.
 	 */
-	ENTITY createLogic(ENTITY object);
+	ENTITY createEntity(ENTITY object);
 }

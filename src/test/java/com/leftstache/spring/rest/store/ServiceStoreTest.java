@@ -37,7 +37,7 @@ public class ServiceStoreTest {
 
 	private static class DoubleInheritInterfaceImpl implements DoubleInheritInterface {
 		@Override
-		public Example createLogic(Example object) {
+		public Example createEntity(Example object) {
 			return null;
 		}
 	}
@@ -49,7 +49,7 @@ public class ServiceStoreTest {
 	private static class ExampleCreate implements CreateLogic<Example, Long> {
 
 		@Override
-		public Example createLogic(Example object) {
+		public Example createEntity(Example object) {
 			return null;
 		}
 	}
