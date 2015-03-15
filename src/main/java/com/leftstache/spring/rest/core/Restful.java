@@ -22,7 +22,7 @@ public @interface Restful {
 	Class<?> entity();
 
 	/**
-	 * The type of the ID of the entity
+	 * The type of the ID of the entity. Required for Services or Repositories with Get functionality.
 	 */
 	Class<? extends Serializable> id() default Long.class;
 }
