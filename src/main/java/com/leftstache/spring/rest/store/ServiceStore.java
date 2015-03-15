@@ -11,6 +11,7 @@ import java.util.concurrent.*;
  */
 @Component
 public class ServiceStore {
+	private final Map<String, Class> entityTypeMap = new ConcurrentHashMap<>();
 	private final Map<String, CreateLogic> createLogicMap = new ConcurrentHashMap<>();
 
 	public void registerCreateLogic(CreateLogic createLogic) {
@@ -18,11 +19,20 @@ public class ServiceStore {
 			throw new NullPointerException("createLogic");
 		}
 
-		String restfulName = createLogic.restfulName();
+		Class entityType = createLogic.getEntityType();
+		entityTypeMap.put(createLogic.getRestfulName(), entityType);
+
+		String restfulName = createLogic.getRestfulName();
 		createLogicMap.put(restfulName, createLogic);
 	}
 
-	public CreateLogic getCreateLogic(String name) {
+	public Class getEntityType(String name) {
+		return entityTypeMap.get(name);
+	}
+
+	public <T> CreateLogic<T> getCreateLogic(String name) {
 		return createLogicMap.get(name);
 	}
+
+
 }
