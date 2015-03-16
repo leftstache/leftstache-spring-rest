@@ -3,11 +3,9 @@ package com.leftstache.spring.rest.util;
 import com.fasterxml.jackson.databind.*;
 import org.springframework.beans.*;
 import org.springframework.beans.factory.annotation.*;
-import org.springframework.data.repository.*;
 import org.springframework.stereotype.*;
 
 import java.beans.*;
-import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -52,14 +50,14 @@ public class BeanPatcher {
 			try {
 				propertyValue = objectMapper.convertValue(rawValue, propertyType);
 			} catch (IllegalArgumentException e) {
-				throw new InputException("Unable to convert field " + fieldName + " to " + propertyType, e);
+				throw new InputException("Unable to convert field '" + fieldName + "' to " + propertyType, e);
 			}
 
 			try {
 				setter.setAccessible(true);
-				setter.invoke(propertyValue);
-			} catch (IllegalAccessException | InvocationTargetException e) {
-				throw new PropertyException("Unable to set field " + fieldName, e);
+				setter.invoke(entity, propertyValue);
+			} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+				throw new PropertyException("Unable to set field '" + fieldName + "'", e);
 			}
 		}
 	}
