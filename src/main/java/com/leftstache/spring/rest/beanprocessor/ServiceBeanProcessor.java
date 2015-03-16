@@ -25,6 +25,10 @@ public class ServiceBeanProcessor implements BeanPostProcessor {
 			serviceStore.registerGetLogic((GetLogic)bean);
 		}
 
+		if(bean instanceof DeleteLogic) {
+			serviceStore.registerDeleteLogic((DeleteLogic)bean);
+		}
+
 		return bean;
 	}
 

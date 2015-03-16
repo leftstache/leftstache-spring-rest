@@ -16,14 +16,16 @@ import java.util.*;
  */
 @RestController
 public class AutoRestController {
-	@Autowired
-	private RepositoryStore repositoryStore;
+	private final RepositoryStore repositoryStore;
+	private final ServiceStore serviceStore;
+	private final ObjectMapper objectMapper;
 
 	@Autowired
-	private ServiceStore serviceStore;
-
-	@Autowired
-	private ObjectMapper objectMapper;
+	public AutoRestController(RepositoryStore repositoryStore, ServiceStore serviceStore, ObjectMapper objectMapper) {
+		this.repositoryStore = repositoryStore;
+		this.serviceStore = serviceStore;
+		this.objectMapper = objectMapper;
+	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
 	public Page<?> search(@PathVariable("name") String name) {
@@ -69,6 +71,27 @@ public class AutoRestController {
 				Class entityType = repositoryStore.getEntityType(name);
 				Object object = objectMapper.convertValue(requestBody, entityType);
 				return repository.save(object);
+			}
+		}
+
+		throw unsupportedException(name);
+	}
+
+	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.DELETE)
+	public void deleteById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
+		DeleteLogic<Object, Serializable> deleteLogic = serviceStore.getDeleteLogic(name);
+		if(deleteLogic != null) {
+			Class<? extends Serializable> idType = serviceStore.getIdType(name);
+			Serializable id = objectMapper.convertValue(idRaw, idType);
+
+			deleteLogic.delete(id);
+		} else {
+			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
+			if(repository != null) {
+				Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+				Serializable id = objectMapper.convertValue(idRaw, idType);
+
+				repository.delete(id);
 			}
 		}
 

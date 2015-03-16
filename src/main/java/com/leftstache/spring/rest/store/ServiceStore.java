@@ -17,6 +17,7 @@ public class ServiceStore {
 
 	private final Map<String, CreateLogic> createLogicMap = new ConcurrentHashMap<>();
 	private final Map<String, GetLogic> getLogicMap = new ConcurrentHashMap<>();
+	private final Map<String, DeleteLogic> deleteLogicMap = new ConcurrentHashMap<>();
 
 	public void registerCreateLogic(CreateLogic object) {
 		if(object == null) {
@@ -40,6 +41,17 @@ public class ServiceStore {
 		getLogicMap.put(restfulName, object);
 	}
 
+	public void registerDeleteLogic(DeleteLogic object) {
+		if(object == null) {
+			throw new NullPointerException("object");
+		}
+
+		String restfulName = object.getRestfulName();
+		entityTypeMap.put(restfulName, object.getEntityType());
+		idTypeMap.put(restfulName, object.getIdType());
+		deleteLogicMap.put(restfulName, object);
+	}
+
 	public Class getEntityType(String name) {
 		return entityTypeMap.get(name);
 	}
@@ -54,5 +66,10 @@ public class ServiceStore {
 
 	public <E, I extends Serializable> GetLogic<E, I> getGetLogic(String name) {
 		return getLogicMap.get(name);
+	}
+
+
+	public <E, I extends Serializable> DeleteLogic<E, I> getDeleteLogic(String name) {
+		return deleteLogicMap.get(name);
 	}
 }
