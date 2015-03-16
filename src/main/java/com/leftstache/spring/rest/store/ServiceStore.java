@@ -60,6 +60,10 @@ public class ServiceStore {
 		return idTypeMap.get(name);
 	}
 
+	public boolean supports(String name) {
+		return idTypeMap.containsKey(name);
+	}
+
 	public <E, I extends Serializable> CreateLogic<E, I> getCreateLogic(String name) {
 		return createLogicMap.get(name);
 	}
@@ -67,7 +71,6 @@ public class ServiceStore {
 	public <E, I extends Serializable> GetLogic<E, I> getGetLogic(String name) {
 		return getLogicMap.get(name);
 	}
-
 
 	public <E, I extends Serializable> DeleteLogic<E, I> getDeleteLogic(String name) {
 		return deleteLogicMap.get(name);

@@ -39,20 +39,18 @@ public class AutoRestController {
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.GET)
 	public Object getById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
-		GetLogic<Object, Serializable> getLogic = serviceStore.getGetLogic(name);
-		if(getLogic != null) {
+		if(serviceStore.supports(name)) {
+			GetLogic<Object, Serializable> getLogic = serviceStore.getGetLogic(name);
 			Class<? extends Serializable> idType = serviceStore.getIdType(name);
 			Serializable id = objectMapper.convertValue(idRaw, idType);
 
 			return getLogic.get(id);
-		} else {
+		} else if(repositoryStore.supports(name)) {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
-			if (repository != null) {
-				Class<? extends Serializable> idType = repositoryStore.getIdType(name);
-				Serializable id = objectMapper.convertValue(idRaw, idType);
+			Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+			Serializable id = objectMapper.convertValue(idRaw, idType);
 
-				return repository.findOne(id);
-			}
+			return repository.findOne(id);
 		}
 
 		throw unsupportedException(name);
@@ -60,18 +58,18 @@ public class AutoRestController {
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.POST)
 	public Object create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody) {
-		CreateLogic<Object, Serializable> createLogic = serviceStore.getCreateLogic(name);
-		if(createLogic != null) {
+		if(serviceStore.supports(name)) {
+			CreateLogic<Object, Serializable> createLogic = serviceStore.getCreateLogic(name);
 			Class entityType = serviceStore.getEntityType(name);
 			Object object = objectMapper.convertValue(requestBody, entityType);
+
 			return createLogic.create(object);
-		} else {
+		} else if(repositoryStore.supports(name)) {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
-			if(repository != null) {
-				Class entityType = repositoryStore.getEntityType(name);
-				Object object = objectMapper.convertValue(requestBody, entityType);
-				return repository.save(object);
-			}
+			Class entityType = repositoryStore.getEntityType(name);
+			Object object = objectMapper.convertValue(requestBody, entityType);
+
+			return repository.save(object);
 		}
 
 		throw unsupportedException(name);
@@ -79,22 +77,20 @@ public class AutoRestController {
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.DELETE)
 	public void deleteById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
-		DeleteLogic<Object, Serializable> deleteLogic = serviceStore.getDeleteLogic(name);
-		if(deleteLogic != null) {
+		if(serviceStore.supports(name)) {
+			DeleteLogic<Object, Serializable> deleteLogic = serviceStore.getDeleteLogic(name);
 			Class<? extends Serializable> idType = serviceStore.getIdType(name);
 			Serializable id = objectMapper.convertValue(idRaw, idType);
 
 			deleteLogic.delete(id);
 			return;
-		} else {
+		} else if(repositoryStore.supports(name)) {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
-			if(repository != null) {
-				Class<? extends Serializable> idType = repositoryStore.getIdType(name);
-				Serializable id = objectMapper.convertValue(idRaw, idType);
+			Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+			Serializable id = objectMapper.convertValue(idRaw, idType);
 
-				repository.delete(id);
-				return;
-			}
+			repository.delete(id);
+			return;
 		}
 
 		throw unsupportedException(name);

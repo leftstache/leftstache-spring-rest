@@ -36,6 +36,8 @@ public class AutoRestControllerTest {
 	public void testGet_repository() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
 		when(repositoryStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 		when(serviceStore.getGetLogic(any())).thenReturn(null);
 
 		Example entity = new Example();
@@ -49,6 +51,8 @@ public class AutoRestControllerTest {
 	@Test
 	public void testGet_service() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(true);
 		when(serviceStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
 
 		Example serviceEntity = new Example();
@@ -66,6 +70,8 @@ public class AutoRestControllerTest {
 	public void testGet_none() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
 		when(serviceStore.getGetLogic(any())).thenReturn(null);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
 
 		try {
@@ -79,6 +85,8 @@ public class AutoRestControllerTest {
 	public void testDelete_repository() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
 		when(repositoryStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 		when(serviceStore.getDeleteLogic(any())).thenReturn(null);
 
 		Example entity = new Example();
@@ -94,6 +102,8 @@ public class AutoRestControllerTest {
 	public void testDelete_service() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
 		when(serviceStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(true);
 
 		Long[] deleted = new Long[1];
 		when(serviceStore.getDeleteLogic(any())).thenReturn(aLong -> deleted[0] = (Long)aLong);
@@ -112,6 +122,8 @@ public class AutoRestControllerTest {
 	public void testDelete_none() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
 		when(serviceStore.getDeleteLogic(any())).thenReturn(null);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
 
 		try {
@@ -127,6 +139,8 @@ public class AutoRestControllerTest {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
 		when(repositoryStore.getEntityType(ENTITY_NAME)).thenReturn(Example.class);
 		when(serviceStore.getGetLogic(any())).thenReturn(null);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 
 		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
 
@@ -144,6 +158,8 @@ public class AutoRestControllerTest {
 	public void testCreate_service() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
 		when(serviceStore.getEntityType(ENTITY_NAME)).thenReturn(Example.class);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(true);
 
 		Example serviceEntity = new Example();
 		when(serviceStore.getCreateLogic(any())).thenReturn(newEntity -> serviceEntity);
@@ -167,6 +183,8 @@ public class AutoRestControllerTest {
 	public void testCreate_none() {
 		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
 		when(serviceStore.getCreateLogic(any())).thenReturn(null);
+		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
+		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
 
 		try {

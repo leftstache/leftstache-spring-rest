@@ -35,6 +35,10 @@ public class RepositoryStore {
 		return idTypeMap.get(name);
 	}
 
+	public boolean supports(String name) {
+		return idTypeMap.containsKey(name);
+	}
+
 	public <ENTITY, ID extends Serializable> PagingAndSortingRepository<ENTITY, ID> getRepository(String name) {
 		return repositoryMap.get(name);
 	}
