@@ -1,0 +1,99 @@
+package com.leftstache.spring.rest.controller;
+
+import com.fasterxml.jackson.databind.*;
+import com.leftstache.spring.rest.core.*;
+import com.leftstache.spring.rest.store.*;
+import com.leftstache.spring.rest.stub.*;
+import org.junit.*;
+import org.springframework.data.repository.*;
+
+import java.io.*;
+
+import static org.mockito.Mockito.*;
+
+/**
+ * @author Joel Johnson
+ */
+public class AutoRestControllerTest {
+	private static final String ENTITY_NAME = "example";
+	private ObjectMapper objectMapper;
+
+	private RepositoryStub<Example, Long> repository;
+
+	private RepositoryStore repositoryStore;
+	private ServiceStore serviceStore;
+
+	@Before
+	public void setUp() {
+		objectMapper = new ObjectMapper();
+		repository = new RepositoryStub<>();
+
+		repositoryStore = mock(RepositoryStore.class);
+		serviceStore = mock(ServiceStore.class);
+	}
+
+	@Test
+	public void testGet_repository() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(repositoryStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+		when(serviceStore.getGetLogic(any())).thenReturn(null);
+
+		Example entity = new Example();
+		repository.add(1L, entity);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		Object byId = autoRestController.getById(ENTITY_NAME, "1");
+		Assert.assertTrue(entity == byId);
+	}
+
+	@Test
+	public void testGet_service() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(serviceStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+
+		Example serviceEntity = new Example();
+		when(serviceStore.getGetLogic(any())).thenReturn(aLong -> serviceEntity);
+
+		Example repoEntity = new Example();
+		repository.add(1L, repoEntity);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		Object byId = autoRestController.getById(ENTITY_NAME, "1");
+		Assert.assertTrue(serviceEntity == byId);
+	}
+
+	@Test
+	public void testGet_none() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
+		when(serviceStore.getGetLogic(any())).thenReturn(null);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+
+		try {
+			autoRestController.getById(ENTITY_NAME, "1");
+		} catch (RuntimeException e) {
+			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
+		}
+	}
+
+	private class Example {
+
+	}
+
+	private class ExampleService implements GetLogic<Example, Long>, CreateLogic<Example, Long>, DeleteLogic<Example, Long> {
+		@Override
+		public Example get(Long aLong) {
+			return null;
+		}
+
+		@Override
+		public Example create(Example object) {
+			return null;
+		}
+
+		@Override
+		public void delete(Long aLong) {
+
+		}
+	}
+
+}
