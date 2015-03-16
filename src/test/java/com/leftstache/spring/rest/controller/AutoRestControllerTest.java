@@ -7,7 +7,6 @@ import com.leftstache.spring.rest.stub.*;
 import org.junit.*;
 import org.springframework.data.repository.*;
 
-import java.io.*;
 
 import static org.mockito.Mockito.*;
 
@@ -78,22 +77,4 @@ public class AutoRestControllerTest {
 	private class Example {
 
 	}
-
-	private class ExampleService implements GetLogic<Example, Long>, CreateLogic<Example, Long>, DeleteLogic<Example, Long> {
-		@Override
-		public Example get(Long aLong) {
-			return null;
-		}
-
-		@Override
-		public Example create(Example object) {
-			return null;
-		}
-
-		@Override
-		public void delete(Long aLong) {
-
-		}
-	}
-
 }
