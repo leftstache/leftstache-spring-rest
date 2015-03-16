@@ -89,6 +89,45 @@ public class BeanPatcherTest {
 		}
 	}
 
+	@Test
+	public void testCyclic_repeat() throws BeanPatcher.InputException, BeanPatcher.PropertyException {
+		CyclicExample cyclicExample = new CyclicExample();
+		cyclicExample.setName("initial");
+		cyclicExample.setCyclicExample(cyclicExample);
+
+		Map<String, Object> patch = new HashMap<>();
+		patch.put("name", "new name");
+
+		Map<String, Object> nestedPatch = new HashMap<>();
+		nestedPatch.put("name", "nested name");
+		patch.put("cyclicExample", nestedPatch);
+
+		beanPatcher.patch(cyclicExample, patch);
+
+		assertEquals("new name", cyclicExample.getName());
+		assertEquals("new name", cyclicExample.getCyclicExample().getName());
+	}
+
+	@Test
+	public void testCyclic_new() throws BeanPatcher.InputException, BeanPatcher.PropertyException {
+		CyclicExample cyclicExample = new CyclicExample();
+		cyclicExample.setName("initial");
+		cyclicExample.setCyclicExample(new CyclicExample());
+		cyclicExample.getCyclicExample().setName("inital nested");
+
+		Map<String, Object> patch = new HashMap<>();
+		patch.put("name", "new name");
+
+		Map<String, Object> nestedPatch = new HashMap<>();
+		nestedPatch.put("name", "nested name");
+		patch.put("cyclicExample", nestedPatch);
+
+		beanPatcher.patch(cyclicExample, patch);
+
+		assertEquals("new name", cyclicExample.getName());
+		assertEquals("nested name", cyclicExample.getCyclicExample().getName());
+	}
+
 	private static class SimpleExample {
 		private String name;
 		private int age;
@@ -179,6 +218,27 @@ public class BeanPatcherTest {
 
 		public void setList(List<Integer> list) {
 			this.list = list;
+		}
+	}
+
+	private static class CyclicExample {
+		private String name;
+		private CyclicExample cyclicExample;
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public CyclicExample getCyclicExample() {
+			return cyclicExample;
+		}
+
+		public void setCyclicExample(CyclicExample cyclicExample) {
+			this.cyclicExample = cyclicExample;
 		}
 	}
 }

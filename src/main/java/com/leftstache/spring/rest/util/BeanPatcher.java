@@ -37,11 +37,6 @@ public class BeanPatcher {
 	}
 
 	private <ENTITY> void applyPatch(ENTITY entity, Map<String, Object> patch, Set<Object> visited) throws PropertyException, InputException {
-		if(visited.contains(entity)) {
-			logger.info("Found cyclic relationship");
-			return;
-		}
-
 		visited.add(entity);
 		for (Map.Entry<String, Object> entry : patch.entrySet()) {
 			String fieldName = entry.getKey();
