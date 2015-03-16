@@ -6,6 +6,7 @@ import org.junit.*;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joel Johnson
@@ -58,6 +59,34 @@ public class BeanPatcherTest {
 		assertEquals("new name", simpleExample.getName());
 		assertEquals(20, simpleExample.getAge());
 		assertEquals("readonly initial", simpleExample.getReadonly());
+	}
+
+	@Test
+	public void testMapChange() throws BeanPatcher.InputException, BeanPatcher.PropertyException {
+		MapExample mapExample = new MapExample();
+		Map<String, Object> patch = new HashMap<>();
+		patch.put("map", new HashMap<>());
+
+		try {
+			beanPatcher.patch(mapExample, patch);
+			fail("patch should fail on changing map");
+		} catch (BeanPatcher.InputException e) {
+			assertEquals("Unable to modify collections. Field: " + MapExample.class.getName() + ".map", e.getMessage());
+		}
+	}
+
+	@Test
+	public void testListChange() throws BeanPatcher.InputException, BeanPatcher.PropertyException {
+		ListExample listExample = new ListExample();
+		Map<String, Object> patch = new HashMap<>();
+		patch.put("list", new ArrayList<>());
+
+		try {
+			beanPatcher.patch(listExample, patch);
+			fail("patch should fail on changing list");
+		} catch (BeanPatcher.InputException e) {
+			assertEquals("Unable to modify collections. Field: " + ListExample.class.getName() + ".list", e.getMessage());
+		}
 	}
 
 	private static class SimpleExample {
@@ -119,6 +148,37 @@ public class BeanPatcherTest {
 
 		public void setSimpleExample(SimpleExample simpleExample) {
 			this.simpleExample = simpleExample;
+		}
+	}
+
+	private static class MapExample {
+		private Map<String, Object> map;
+
+		public MapExample() {
+		}
+
+		public Map<String, Object> getMap() {
+			return map;
+		}
+
+		public void setMap(Map<String, Object> map) {
+			this.map = map;
+		}
+	}
+
+	private static class ListExample {
+		private List<Integer> list;
+
+		public ListExample() {
+
+		}
+
+		public List<Integer> getList() {
+			return list;
+		}
+
+		public void setList(List<Integer> list) {
+			this.list = list;
 		}
 	}
 }

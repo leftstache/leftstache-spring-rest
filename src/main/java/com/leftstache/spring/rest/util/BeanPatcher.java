@@ -1,6 +1,7 @@
 package com.leftstache.spring.rest.util;
 
 import com.fasterxml.jackson.databind.*;
+import org.slf4j.*;
 import org.springframework.beans.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
@@ -14,6 +15,8 @@ import java.util.*;
  */
 @Component
 public class BeanPatcher {
+	private static final Logger logger = LoggerFactory.getLogger(BeanPatcher.class);
+
 	private final ObjectMapper objectMapper;
 
 	@Autowired
@@ -30,10 +33,16 @@ public class BeanPatcher {
 	 * @throws InputException		Thrown if there's a problem with a property. For example, the setter for the field take one type, and the value is incompatible with that type.
 	 */
 	public <ENTITY> void patch(ENTITY entity, Map<String, Object> changes) throws PropertyException, InputException {
-		applyPatch(entity, changes);
+		applyPatch(entity, changes, new HashSet<>());
 	}
 
-	private <ENTITY> void applyPatch(ENTITY entity, Map<String, Object> patch) throws PropertyException, InputException {
+	private <ENTITY> void applyPatch(ENTITY entity, Map<String, Object> patch, Set<Object> visited) throws PropertyException, InputException {
+		if(visited.contains(entity)) {
+			logger.info("Found cyclic relationship");
+			return;
+		}
+
+		visited.add(entity);
 		for (Map.Entry<String, Object> entry : patch.entrySet()) {
 			String fieldName = entry.getKey();
 			Object rawValue = entry.getValue();
@@ -45,24 +54,49 @@ public class BeanPatcher {
 			}
 
 			Class<?> propertyType = property.getPropertyType();
-			Object propertyValue;
 
-			try {
-				propertyValue = objectMapper.convertValue(rawValue, propertyType);
-			} catch (IllegalArgumentException e) {
-				throw new InputException("Unable to convert field '" + fieldName + "' to " + propertyType, e);
+			if(Map.class.isAssignableFrom(propertyType) || Collection.class.isAssignableFrom(propertyType)) {
+				throw new InputException("Unable to modify collections. Field: " + entity.getClass().getName() + "." + fieldName);
 			}
 
-			try {
-				setter.setAccessible(true);
-				setter.invoke(entity, propertyValue);
-			} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-				throw new PropertyException("Unable to set field '" + fieldName + "'", e);
+			Object propertyValue;
+
+			if(rawValue instanceof Map) {
+				Method getter = property.getReadMethod();
+				if(getter != null) {
+					try {
+						Object nextEntity = getter.invoke(entity);
+						if(!visited.contains(nextEntity)) {
+							applyPatch(nextEntity, (Map)rawValue, visited);
+						} else {
+							logger.info("Found cyclic relationship: " + propertyType + " " + fieldName);
+						}
+					} catch (IllegalAccessException | InvocationTargetException e) {
+						throw new PropertyException("Unable to get nested field '" +fieldName + "'", e);
+					}
+				}
+			} else {
+				try {
+					propertyValue = objectMapper.convertValue(rawValue, propertyType);
+				} catch (IllegalArgumentException e) {
+					throw new InputException("Unable to convert field '" + fieldName + "' to " + propertyType, e);
+				}
+
+				try {
+					setter.setAccessible(true);
+					setter.invoke(entity, propertyValue);
+				} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+					throw new PropertyException("Unable to set field '" + fieldName + "'", e);
+				}
 			}
 		}
 	}
 
 	public static class InputException extends java.lang.Exception {
+		public InputException(String message) {
+			super(message);
+		}
+
 		public InputException(String message, Throwable cause) {
 			super(message, cause);
 		}
