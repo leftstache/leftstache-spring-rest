@@ -1,7 +1,6 @@
 package com.leftstache.spring.rest.controller;
 
 import com.fasterxml.jackson.databind.*;
-import com.leftstache.spring.rest.core.*;
 import com.leftstache.spring.rest.store.*;
 import com.leftstache.spring.rest.stub.*;
 import org.junit.*;
