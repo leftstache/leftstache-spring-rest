@@ -48,7 +48,7 @@ public class RepositoryStub<ENTITY, ID extends Serializable> implements PagingAn
 
 	@Override
 	public boolean exists(ID id) {
-		throw new UnsupportedOperationException();
+		return entities.containsKey(id);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class RepositoryStub<ENTITY, ID extends Serializable> implements PagingAn
 
 	@Override
 	public void delete(ID id) {
-		throw new UnsupportedOperationException();
+		entities.remove(id);
 	}
 
 	@Override

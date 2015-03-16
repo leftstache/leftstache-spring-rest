@@ -74,6 +74,52 @@ public class AutoRestControllerTest {
 		}
 	}
 
+	@Test
+	public void testDelete_repository() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(repositoryStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+		when(serviceStore.getDeleteLogic(any())).thenReturn(null);
+
+		Example entity = new Example();
+		repository.add(1L, entity);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		autoRestController.deleteById(ENTITY_NAME, "1");
+		Assert.assertFalse(repository.exists(1L));
+	}
+
+
+	@Test
+	public void testDelete_service() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(serviceStore.getIdType(ENTITY_NAME)).thenReturn(Long.class);
+
+		Long[] deleted = new Long[1];
+		when(serviceStore.getDeleteLogic(any())).thenReturn(aLong -> deleted[0] = (Long)aLong);
+
+		Example repoEntity = new Example();
+		repository.add(1L, repoEntity);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		autoRestController.deleteById(ENTITY_NAME, "1");
+		Assert.assertEquals((Object) 1L, deleted[0]);
+	}
+
+
+
+	@Test
+	public void testDelete_none() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
+		when(serviceStore.getDeleteLogic(any())).thenReturn(null);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+
+		try {
+			autoRestController.deleteById(ENTITY_NAME, "1");
+		} catch (RuntimeException e) {
+			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
+		}
+	}
+
 	private class Example {
 
 	}

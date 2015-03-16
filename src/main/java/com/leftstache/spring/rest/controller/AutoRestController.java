@@ -85,6 +85,7 @@ public class AutoRestController {
 			Serializable id = objectMapper.convertValue(idRaw, idType);
 
 			deleteLogic.delete(id);
+			return;
 		} else {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
 			if(repository != null) {
@@ -92,6 +93,7 @@ public class AutoRestController {
 				Serializable id = objectMapper.convertValue(idRaw, idType);
 
 				repository.delete(id);
+				return;
 			}
 		}
 
