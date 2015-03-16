@@ -37,12 +37,20 @@ public class AutoRestController {
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.GET)
 	public Object getById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
-		PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
-		if(repository != null) {
-			Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+		GetLogic<Object, Serializable> getLogic = serviceStore.getGetLogic(name);
+		if(getLogic != null) {
+			Class<? extends Serializable> idType = serviceStore.getIdType(name);
 			Serializable id = objectMapper.convertValue(idRaw, idType);
 
-			return repository.findOne(id);
+			return getLogic.get(id);
+		} else {
+			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
+			if (repository != null) {
+				Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+				Serializable id = objectMapper.convertValue(idRaw, idType);
+
+				return repository.findOne(id);
+			}
 		}
 
 		throw unsupportedException(name);

@@ -21,6 +21,10 @@ public class ServiceBeanProcessor implements BeanPostProcessor {
 			serviceStore.registerCreateLogic((CreateLogic) bean);
 		}
 
+		if(bean instanceof GetLogic) {
+			serviceStore.registerGetLogic((GetLogic)bean);
+		}
+
 		return bean;
 	}
 

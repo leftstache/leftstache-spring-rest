@@ -14,16 +14,30 @@ import java.util.concurrent.*;
 public class ServiceStore {
 	private final Map<String, Class> entityTypeMap = new ConcurrentHashMap<>();
 	private final Map<String, Class> idTypeMap = new ConcurrentHashMap<>();
-	private final Map<String, CreateLogic> createLogicMap = new ConcurrentHashMap<>();
 
-	public void registerCreateLogic(CreateLogic createLogic) {
-		if(createLogic == null) {
-			throw new NullPointerException("createLogic");
+	private final Map<String, CreateLogic> createLogicMap = new ConcurrentHashMap<>();
+	private final Map<String, GetLogic> getLogicMap = new ConcurrentHashMap<>();
+
+	public void registerCreateLogic(CreateLogic object) {
+		if(object == null) {
+			throw new NullPointerException("object");
 		}
 
-		entityTypeMap.put(createLogic.getRestfulName(), createLogic.getEntityType());
-		idTypeMap.put(createLogic.getRestfulName(), createLogic.getIdType());
-		createLogicMap.put(createLogic.getRestfulName(), createLogic);
+		String restfulName = object.getRestfulName();
+		entityTypeMap.put(restfulName, object.getEntityType());
+		idTypeMap.put(restfulName, object.getIdType());
+		createLogicMap.put(restfulName, object);
+	}
+
+	public void registerGetLogic(GetLogic object) {
+		if(object == null) {
+			throw new NullPointerException("object");
+		}
+
+		String restfulName = object.getRestfulName();
+		entityTypeMap.put(restfulName, object.getEntityType());
+		idTypeMap.put(restfulName, object.getIdType());
+		getLogicMap.put(restfulName, object);
 	}
 
 	public Class getEntityType(String name) {
@@ -38,5 +52,7 @@ public class ServiceStore {
 		return createLogicMap.get(name);
 	}
 
-
+	public <E, I extends Serializable> GetLogic<E, I> getGetLogic(String name) {
+		return getLogicMap.get(name);
+	}
 }
