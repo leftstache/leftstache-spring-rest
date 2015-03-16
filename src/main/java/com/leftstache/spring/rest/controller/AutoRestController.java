@@ -3,9 +3,12 @@ package com.leftstache.spring.rest.controller;
 import com.fasterxml.jackson.databind.*;
 import com.leftstache.spring.rest.core.*;
 import com.leftstache.spring.rest.store.*;
+import com.leftstache.spring.rest.util.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.repository.*;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
@@ -16,15 +19,19 @@ import java.util.*;
  */
 @RestController
 public class AutoRestController {
+	private Logger logger = LoggerFactory.getLogger(AutoRestController.class);
+
 	private final RepositoryStore repositoryStore;
 	private final ServiceStore serviceStore;
 	private final ObjectMapper objectMapper;
+	private final BeanPatcher beanPatcher;
 
 	@Autowired
-	public AutoRestController(RepositoryStore repositoryStore, ServiceStore serviceStore, ObjectMapper objectMapper) {
+	public AutoRestController(RepositoryStore repositoryStore, ServiceStore serviceStore, ObjectMapper objectMapper, BeanPatcher beanPatcher) {
 		this.repositoryStore = repositoryStore;
 		this.serviceStore = serviceStore;
 		this.objectMapper = objectMapper;
+		this.beanPatcher = beanPatcher;
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
@@ -91,6 +98,39 @@ public class AutoRestController {
 
 			repository.delete(id);
 			return;
+		}
+
+		throw unsupportedException(name);
+	}
+
+	@RequestMapping(value ="/{name}/{id}", method = RequestMethod.PATCH)
+	public ResponseEntity<Object> patch( @PathVariable("name") String name, @PathVariable("id") String idRaw, @RequestBody Map<String, Object> changes) {
+		if(serviceStore.supports(name)) {
+			PatchLogic<Object, Serializable> patchLogic = serviceStore.getPatchLogic(name);
+
+			Class<? extends Serializable> idType = serviceStore.getIdType(name);
+			Serializable id = objectMapper.convertValue(idRaw, idType);
+
+			return new ResponseEntity<Object>(patchLogic.patch(id, changes), HttpStatus.ACCEPTED);
+		} else if(repositoryStore.supports(name)) {
+			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
+
+			Class<? extends Serializable> idType = repositoryStore.getIdType(name);
+			Serializable id = objectMapper.convertValue(idRaw, idType);
+
+			Object entity = repository.findOne(id);
+			try {
+				beanPatcher.patch(entity, changes);
+			} catch (BeanPatcher.PropertyException e) {
+				logger.error("Internal Server Error", e);
+				return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (BeanPatcher.InputException e) {
+				logger.info("Unprocessable Entity", e);
+				return new ResponseEntity<Object>(HttpStatus.UNPROCESSABLE_ENTITY);
+			}
+
+			Object savedEntity = repository.save(entity);
+			return new ResponseEntity<Object>(savedEntity, HttpStatus.OK);
 		}
 
 		throw unsupportedException(name);

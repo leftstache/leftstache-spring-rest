@@ -3,6 +3,7 @@ package com.leftstache.spring.rest.controller;
 import com.fasterxml.jackson.databind.*;
 import com.leftstache.spring.rest.store.*;
 import com.leftstache.spring.rest.stub.*;
+import com.leftstache.spring.rest.util.*;
 import org.junit.*;
 import org.springframework.data.repository.*;
 
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.*;
 public class AutoRestControllerTest {
 	private static final String ENTITY_NAME = "example";
 	private ObjectMapper objectMapper;
+	private BeanPatcher beanPatcher;
 
 	private RepositoryStub<Example, Long> repository;
 
@@ -26,6 +28,7 @@ public class AutoRestControllerTest {
 	@Before
 	public void setUp() {
 		objectMapper = new ObjectMapper();
+		beanPatcher = new BeanPatcher(objectMapper);
 		repository = new RepositoryStub<>();
 
 		repositoryStore = mock(RepositoryStore.class);
@@ -43,7 +46,7 @@ public class AutoRestControllerTest {
 		Example entity = new Example();
 		repository.add(1L, entity);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 		Object byId = autoRestController.getById(ENTITY_NAME, "1");
 		Assert.assertTrue(entity == byId);
 	}
@@ -61,7 +64,7 @@ public class AutoRestControllerTest {
 		Example repoEntity = new Example();
 		repository.add(1L, repoEntity);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 		Object byId = autoRestController.getById(ENTITY_NAME, "1");
 		Assert.assertTrue(serviceEntity == byId);
 	}
@@ -72,7 +75,7 @@ public class AutoRestControllerTest {
 		when(serviceStore.getGetLogic(any())).thenReturn(null);
 		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
 		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 
 		try {
 			autoRestController.getById(ENTITY_NAME, "1");
@@ -92,7 +95,7 @@ public class AutoRestControllerTest {
 		Example entity = new Example();
 		repository.add(1L, entity);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 		autoRestController.deleteById(ENTITY_NAME, "1");
 		Assert.assertFalse(repository.exists(1L));
 	}
@@ -111,7 +114,7 @@ public class AutoRestControllerTest {
 		Example repoEntity = new Example();
 		repository.add(1L, repoEntity);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 		autoRestController.deleteById(ENTITY_NAME, "1");
 		Assert.assertEquals((Object) 1L, deleted[0]);
 	}
@@ -124,7 +127,7 @@ public class AutoRestControllerTest {
 		when(serviceStore.getDeleteLogic(any())).thenReturn(null);
 		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
 		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 
 		try {
 			autoRestController.deleteById(ENTITY_NAME, "1");
@@ -142,7 +145,7 @@ public class AutoRestControllerTest {
 		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(true);
 		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 
 		Map<String, Object> rawObject = new HashMap<>();
 		rawObject.put("name", "test value");
@@ -167,7 +170,7 @@ public class AutoRestControllerTest {
 		Example repoEntity = new Example();
 		repository.add(1L, repoEntity);
 
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 
 		Map<String, Object> rawObject = new HashMap<>();
 		rawObject.put("name", "test value");
@@ -185,7 +188,7 @@ public class AutoRestControllerTest {
 		when(serviceStore.getCreateLogic(any())).thenReturn(null);
 		when(repositoryStore.supports(ENTITY_NAME)).thenReturn(false);
 		when(serviceStore.supports(ENTITY_NAME)).thenReturn(false);
-		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper, beanPatcher);
 
 		try {
 			autoRestController.create(ENTITY_NAME, new HashMap<>());
