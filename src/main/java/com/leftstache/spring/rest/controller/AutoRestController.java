@@ -35,10 +35,24 @@ public class AutoRestController {
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
-	public Page<?> search(@PathVariable("name") String name) {
+	public Page<?> search(
+		@PathVariable("name") String name,
+		@RequestParam(value = "page", defaultValue = "0") int page,
+		@RequestParam(value = "pageSize", defaultValue = "100") int pageSize,
+		@RequestParam(value = "sortOrder", defaultValue = "ASC") String sortOrderStr,
+		@RequestParam(value = "sortBy", required = false) String[] sortBy
+	) {
+		PageRequest pageRequest;
+		if(sortBy == null || sortBy.length <= 0) {
+			pageRequest = new PageRequest(page, pageSize);
+		} else {
+			Sort.Direction sortOrder = Sort.Direction.fromString(sortOrderStr.toUpperCase());
+			pageRequest = new PageRequest(page, pageSize, sortOrder, sortBy);
+		}
+
 		PagingAndSortingRepository<?, ?> repository = repositoryStore.getRepository(name);
 		if(repository != null) {
-			return repository.findAll(new PageRequest(0, 10));
+			return repository.findAll(pageRequest);
 		}
 
 		throw unsupportedException(name);
