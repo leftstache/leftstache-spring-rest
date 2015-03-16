@@ -42,17 +42,19 @@ public class AutoRestController {
 		@RequestParam(value = "sortOrder", defaultValue = "ASC") String sortOrderStr,
 		@RequestParam(value = "sortBy", required = false) String[] sortBy
 	) {
-		PageRequest pageRequest;
-		if(sortBy == null || sortBy.length <= 0) {
-			pageRequest = new PageRequest(page, pageSize);
-		} else {
-			Sort.Direction sortOrder = Sort.Direction.fromString(sortOrderStr.toUpperCase());
-			pageRequest = new PageRequest(page, pageSize, sortOrder, sortBy);
-		}
+		if(repositoryStore.supports(name)) {
+			PageRequest pageRequest;
+			if (sortBy == null || sortBy.length <= 0) {
+				pageRequest = new PageRequest(page, pageSize);
+			} else {
+				Sort.Direction sortOrder = Sort.Direction.fromString(sortOrderStr.toUpperCase());
+				pageRequest = new PageRequest(page, pageSize, sortOrder, sortBy);
+			}
 
-		PagingAndSortingRepository<?, ?> repository = repositoryStore.getRepository(name);
-		if(repository != null) {
-			return repository.findAll(pageRequest);
+			PagingAndSortingRepository<?, ?> repository = repositoryStore.getRepository(name);
+			if (repository != null) {
+				return repository.findAll(pageRequest);
+			}
 		}
 
 		throw unsupportedException(name);
