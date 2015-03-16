@@ -62,7 +62,7 @@ public class AutoRestController {
 		if(createLogic != null) {
 			Class entityType = serviceStore.getEntityType(name);
 			Object object = objectMapper.convertValue(requestBody, entityType);
-			return createLogic.createEntity(object);
+			return createLogic.create(object);
 		} else {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
 			if(repository != null) {
