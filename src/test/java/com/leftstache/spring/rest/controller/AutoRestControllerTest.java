@@ -7,6 +7,8 @@ import org.junit.*;
 import org.springframework.data.repository.*;
 
 
+import java.util.*;
+
 import static org.mockito.Mockito.*;
 
 /**
@@ -119,7 +121,73 @@ public class AutoRestControllerTest {
 		}
 	}
 
-	private class Example {
 
+	@Test
+	public void testCreate_repository() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(repositoryStore.getEntityType(ENTITY_NAME)).thenReturn(Example.class);
+		when(serviceStore.getGetLogic(any())).thenReturn(null);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+
+		Map<String, Object> rawObject = new HashMap<>();
+		rawObject.put("name", "test value");
+		Example byId = (Example) autoRestController.create(ENTITY_NAME, rawObject);
+		Assert.assertEquals("test value", byId.getName());
+
+		List<Example> saved = repository.getSaved();
+		Assert.assertEquals(1, saved.size());
+		Assert.assertEquals(byId, saved.get(0));
+	}
+
+	@Test
+	public void testCreate_service() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn((PagingAndSortingRepository)repository);
+		when(serviceStore.getEntityType(ENTITY_NAME)).thenReturn(Example.class);
+
+		Example serviceEntity = new Example();
+		when(serviceStore.getCreateLogic(any())).thenReturn(newEntity -> serviceEntity);
+
+		Example repoEntity = new Example();
+		repository.add(1L, repoEntity);
+
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+
+		Map<String, Object> rawObject = new HashMap<>();
+		rawObject.put("name", "test value");
+		Example byId = (Example) autoRestController.create(ENTITY_NAME, rawObject);
+
+		Assert.assertEquals(serviceEntity, byId);
+
+		List<Example> saved = repository.getSaved();
+		Assert.assertEquals(0, saved.size());
+	}
+
+	@Test
+	public void testCreate_none() {
+		when(repositoryStore.getRepository(ENTITY_NAME)).thenReturn(null);
+		when(serviceStore.getCreateLogic(any())).thenReturn(null);
+		AutoRestController autoRestController = new AutoRestController(repositoryStore, serviceStore, objectMapper);
+
+		try {
+			autoRestController.create(ENTITY_NAME, new HashMap<>());
+		} catch (RuntimeException e) {
+			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
+		}
+	}
+
+	public static class Example {
+		private String name;
+
+		public Example() {
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 	}
 }

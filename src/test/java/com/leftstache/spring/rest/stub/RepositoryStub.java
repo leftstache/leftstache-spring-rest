@@ -12,13 +12,19 @@ import java.util.*;
  */
 public class RepositoryStub<ENTITY, ID extends Serializable> implements PagingAndSortingRepository<ENTITY, ID>, Restful<ENTITY, ID> {
 	private Map<ID, ENTITY> entities;
+	private List<ENTITY> saved;
 
 	public RepositoryStub() {
 		entities = new HashMap<>();
+		saved = new ArrayList<>();
 	}
 
 	public void add(ID id, ENTITY entity) {
 		entities.put(id, entity);
+	}
+
+	public List<ENTITY> getSaved() {
+		return saved;
 	}
 
 	@Override
@@ -38,7 +44,8 @@ public class RepositoryStub<ENTITY, ID extends Serializable> implements PagingAn
 
 	@Override
 	public <S extends ENTITY> S save(S entity) {
-		throw new UnsupportedOperationException();
+		saved.add(entity);
+		return entity;
 	}
 
 	@Override
