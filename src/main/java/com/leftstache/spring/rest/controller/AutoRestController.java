@@ -64,19 +64,21 @@ public class AutoRestController {
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.POST)
-	public Object create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody) {
+	public ResponseEntity<Object> create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody) {
 		if(serviceStore.supports(name)) {
 			CreateLogic<Object, Serializable> createLogic = serviceStore.getCreateLogic(name);
 			Class entityType = serviceStore.getEntityType(name);
 			Object object = objectMapper.convertValue(requestBody, entityType);
 
-			return createLogic.create(object);
+			Object created = createLogic.create(object);
+			return new ResponseEntity<Object>(created, HttpStatus.CREATED);
 		} else if(repositoryStore.supports(name)) {
 			PagingAndSortingRepository<Object, Serializable> repository = repositoryStore.getRepository(name);
 			Class entityType = repositoryStore.getEntityType(name);
 			Object object = objectMapper.convertValue(requestBody, entityType);
 
-			return repository.save(object);
+			Object saved = repository.save(object);
+			return new ResponseEntity<Object>(saved, HttpStatus.CREATED);
 		}
 
 		throw unsupportedException(name);

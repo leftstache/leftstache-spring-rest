@@ -6,6 +6,7 @@ import com.leftstache.spring.rest.stub.*;
 import com.leftstache.spring.rest.util.*;
 import org.junit.*;
 import org.springframework.data.repository.*;
+import org.springframework.http.*;
 
 
 import java.util.*;
@@ -151,12 +152,13 @@ public class AutoRestControllerTest {
 
 		Map<String, Object> rawObject = new HashMap<>();
 		rawObject.put("name", "test value");
-		Example byId = (Example) autoRestController.create(ENTITY_NAME, rawObject);
-		Assert.assertEquals("test value", byId.getName());
+		ResponseEntity<Example> byId = (ResponseEntity) autoRestController.create(ENTITY_NAME, rawObject);
+		Assert.assertEquals(HttpStatus.CREATED, byId.getStatusCode());
+		Assert.assertEquals("test value", byId.getBody().getName());
 
 		List<Example> saved = repository.getSaved();
 		Assert.assertEquals(1, saved.size());
-		Assert.assertEquals(byId, saved.get(0));
+		Assert.assertEquals(byId.getBody(), saved.get(0));
 	}
 
 	@Test
@@ -176,9 +178,10 @@ public class AutoRestControllerTest {
 
 		Map<String, Object> rawObject = new HashMap<>();
 		rawObject.put("name", "test value");
-		Example byId = (Example) autoRestController.create(ENTITY_NAME, rawObject);
+		ResponseEntity<Example> byId = (ResponseEntity) autoRestController.create(ENTITY_NAME, rawObject);
 
-		Assert.assertEquals(serviceEntity, byId);
+		Assert.assertEquals(HttpStatus.CREATED, byId.getStatusCode());
+		Assert.assertEquals(serviceEntity, byId.getBody());
 
 		List<Example> saved = repository.getSaved();
 		Assert.assertEquals(0, saved.size());
