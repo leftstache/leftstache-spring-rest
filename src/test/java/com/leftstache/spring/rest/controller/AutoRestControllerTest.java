@@ -79,6 +79,7 @@ public class AutoRestControllerTest {
 
 		try {
 			autoRestController.getById(ENTITY_NAME, "1");
+			Assert.fail("Should have failed with unsupported endpoint");
 		} catch (RuntimeException e) {
 			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
 		}
@@ -131,6 +132,7 @@ public class AutoRestControllerTest {
 
 		try {
 			autoRestController.deleteById(ENTITY_NAME, "1");
+			Assert.fail("Should have failed with unsupported endpoint");
 		} catch (RuntimeException e) {
 			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
 		}
@@ -192,6 +194,7 @@ public class AutoRestControllerTest {
 
 		try {
 			autoRestController.create(ENTITY_NAME, new HashMap<>());
+			Assert.fail("Should have failed with unsupported endpoint");
 		} catch (RuntimeException e) {
 			Assert.assertEquals("Unsupported endpoint: example", e.getMessage());
 		}
