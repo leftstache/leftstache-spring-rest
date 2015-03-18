@@ -15,53 +15,12 @@ public class ServiceStore {
 	private final Map<String, Class> entityTypeMap = new ConcurrentHashMap<>();
 	private final Map<String, Class> idTypeMap = new ConcurrentHashMap<>();
 
-	private final Map<String, CreateLogic> createLogicMap = new ConcurrentHashMap<>();
-	private final Map<String, GetLogic> getLogicMap = new ConcurrentHashMap<>();
-	private final Map<String, DeleteLogic> deleteLogicMap = new ConcurrentHashMap<>();
-	private final Map<String, PatchLogic> patchLogicMap = new ConcurrentHashMap<>();
-
-	public void registerCreateLogic(CreateLogic object) {
+	public void registerService(Object object) {
 		if(object == null) {
 			throw new NullPointerException("object");
 		}
 
-		String restfulName = object.getRestfulName();
-		entityTypeMap.put(restfulName, object.getEntityType());
-		idTypeMap.put(restfulName, object.getIdType());
-		createLogicMap.put(restfulName, object);
-	}
 
-	public void registerGetLogic(GetLogic object) {
-		if(object == null) {
-			throw new NullPointerException("object");
-		}
-
-		String restfulName = object.getRestfulName();
-		entityTypeMap.put(restfulName, object.getEntityType());
-		idTypeMap.put(restfulName, object.getIdType());
-		getLogicMap.put(restfulName, object);
-	}
-
-	public void registerDeleteLogic(DeleteLogic object) {
-		if(object == null) {
-			throw new NullPointerException("object");
-		}
-
-		String restfulName = object.getRestfulName();
-		entityTypeMap.put(restfulName, object.getEntityType());
-		idTypeMap.put(restfulName, object.getIdType());
-		deleteLogicMap.put(restfulName, object);
-	}
-
-	public void registerPatchLogic(PatchLogic object) {
-		if(object == null) {
-			throw new NullPointerException("object");
-		}
-
-		String restfulName = object.getRestfulName();
-		entityTypeMap.put(restfulName, object.getEntityType());
-		idTypeMap.put(restfulName, object.getIdType());
-		patchLogicMap.put(restfulName, object);
 	}
 
 	public Class getEntityType(String name) {
@@ -74,21 +33,5 @@ public class ServiceStore {
 
 	public boolean supports(String name) {
 		return idTypeMap.containsKey(name);
-	}
-
-	public <E, I extends Serializable> CreateLogic<E, I> getCreateLogic(String name) {
-		return createLogicMap.get(name);
-	}
-
-	public <E, I extends Serializable> GetLogic<E, I> getGetLogic(String name) {
-		return getLogicMap.get(name);
-	}
-
-	public <E, I extends Serializable> DeleteLogic<E, I> getDeleteLogic(String name) {
-		return deleteLogicMap.get(name);
-	}
-
-	public <E, I extends Serializable> PatchLogic<E, I> getPatchLogic(String name) {
-		return patchLogicMap.get(name);
 	}
 }

@@ -17,17 +17,6 @@ public class ServiceBeanProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-		if(bean instanceof CreateLogic) {
-			serviceStore.registerCreateLogic((CreateLogic) bean);
-		}
-
-		if(bean instanceof GetLogic) {
-			serviceStore.registerGetLogic((GetLogic)bean);
-		}
-
-		if(bean instanceof DeleteLogic) {
-			serviceStore.registerDeleteLogic((DeleteLogic)bean);
-		}
 
 		return bean;
 	}
