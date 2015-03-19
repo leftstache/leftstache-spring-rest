@@ -1,11 +1,9 @@
 package com.leftstache.spring.rest.controller;
 
-import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.type.*;
 import com.fasterxml.jackson.databind.*;
 import com.leftstache.spring.rest.core.*;
 import com.leftstache.spring.rest.store.*;
-import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.*;
 import org.springframework.http.*;
@@ -41,51 +39,92 @@ public class AutoRestController {
 		}
 
 		ServiceWrapper service = serviceStore.getService(name);
-		if(service.supports(RestEndpoint.Type.SEARCH)) {
-			return service.search(queryString, queryMap);
+		if(service != null) {
+			if (service.supports(RestEndpoint.Type.SEARCH)) {
+				return service.search(queryString, queryMap);
+			}
+
+			return notSupported();
 		}
 
-		throw new RuntimeException("Unsupported endpoint: " + name);
+		return notFound();
 	}
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Object> getById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
 		ServiceWrapper service = serviceStore.getService(name);
-		if(service.supports(RestEndpoint.Type.GET)) {
-			return service.get(idRaw);
+		if(service != null) {
+			if (service.supports(RestEndpoint.Type.GET)) {
+				return service.get(idRaw);
+			}
+
+			return notSupported();
 		}
 
-		throw new RuntimeException("Unsupported endpoint: " + name);
+		return notFound();
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.POST)
-	public ResponseEntity<Void> create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+	public ResponseEntity<Void> create(@PathVariable("name") String name, @RequestBody(required = false) Map<String, Object> requestBody, HttpServletRequest request) {
 		ServiceWrapper service = serviceStore.getService(name);
-		if(service.supports(RestEndpoint.Type.CREATE)) {
-			return service.create(request.getRequestURL().toString(), requestBody);
+		if(service != null) {
+			if (requestBody != null && service.supports(RestEndpoint.Type.CREATE)) {
+				return service.create(request.getRequestURL().toString(), requestBody);
+			}
+
+			return notSupported();
 		}
 
-		throw new RuntimeException("Unsupported endpoint: " + name);
+		return notFound();
 	}
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.DELETE)
 	public ResponseEntity<Void> deleteById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
 		ServiceWrapper service = serviceStore.getService(name);
-		if(service.supports(RestEndpoint.Type.DELETE)) {
-			return service.delete(idRaw);
+		if(service != null) {
+			if (service.supports(RestEndpoint.Type.DELETE)) {
+				return service.delete(idRaw);
+			}
+
+			return notSupported();
 		}
 
-		throw new RuntimeException("Unsupported endpoint: " + name);
+		return notFound();
 	}
 
 	@RequestMapping(value ="/{name}/{id}", method = RequestMethod.PATCH)
-	public ResponseEntity<Object> patch( @PathVariable("name") String name, @PathVariable("id") String idRaw, @RequestBody Map<String, Object> changes) {
+	public ResponseEntity<Void> patch( @PathVariable("name") String name, @PathVariable("id") String idRaw, @RequestBody(required = false) Map<String, Object> changes) {
 		ServiceWrapper service = serviceStore.getService(name);
-		if(service.supports(RestEndpoint.Type.EDIT)) {
-			return service.edit(idRaw, changes);
+		if(service != null) {
+			if (changes != null && service.supports(RestEndpoint.Type.EDIT)) {
+				return service.edit(idRaw, changes);
+			}
+
+			return notSupported();
 		}
 
-		throw new RuntimeException("Unsupported endpoint: " + name);
+		return notFound();
 	}
 
+	@RequestMapping(value ="/{name}/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Void> replace( @PathVariable("name") String name, @PathVariable("id") String idRaw, @RequestBody(required = false) Map<String, Object> requestBody) {
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service != null) {
+			if (requestBody != null && service.supports(RestEndpoint.Type.REPLACE)) {
+				return service.replace(idRaw, requestBody);
+			}
+
+			return notSupported();
+		}
+
+		return notFound();
+	}
+
+	private <T> ResponseEntity<T> notFound() {
+		return new ResponseEntity<T>(HttpStatus.NOT_FOUND);
+	}
+
+	private <T> ResponseEntity<T> notSupported() {
+		return new ResponseEntity<T>(HttpStatus.METHOD_NOT_ALLOWED);
+	}
 }
