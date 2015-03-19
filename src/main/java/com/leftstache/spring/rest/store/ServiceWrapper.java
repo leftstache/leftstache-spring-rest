@@ -71,13 +71,23 @@ public class ServiceWrapper {
 	}
 
 	public boolean supports(RestEndpoint.Type method) {
-		return exposedMethods.containsKey(method);
+		return method == RestEndpoint.Type.GET || method == RestEndpoint.Type.SEARCH || exposedMethods.containsKey(method);
 	}
 
 	public ResponseEntity<Object> get(String idStr) {
 		Serializable id = converter.convertTo(idType, idStr);
-		Object one = repository.findOne(id);
-		ResponseEntity<Object> result = new ResponseEntity<Object>(one, HttpStatus.OK);
+		Object fetchedObject;
+		if(exposedMethods.get(RestEndpoint.Type.GET) != null) {
+			try {
+				fetchedObject = invoke(RestEndpoint.Type.GET, new Object[]{id});
+			} catch (InvocationTargetException | IllegalAccessException e) {
+				logger.error("Unable to invoke service method", e);
+				return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		} else {
+			fetchedObject = repository.findOne(id);
+		}
+		ResponseEntity<Object> result = new ResponseEntity<Object>(fetchedObject, HttpStatus.OK);
 		return result;
 	}
 
