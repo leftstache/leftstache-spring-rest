@@ -7,6 +7,8 @@ import com.leftstache.spring.rest.util.*;
 import org.slf4j.*;
 import org.springframework.beans.factory.*;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.*;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.*;
 import org.springframework.http.*;
 import org.springframework.util.*;
@@ -71,7 +73,15 @@ public class ServiceWrapper {
 	}
 
 	public boolean supports(RestEndpoint.Type method) {
-		return method == RestEndpoint.Type.GET || method == RestEndpoint.Type.SEARCH || exposedMethods.containsKey(method);
+		if(method == RestEndpoint.Type.SEARCH && repository instanceof JpaSpecificationExecutor) {
+			return true;
+		}
+
+		if(method == RestEndpoint.Type.GET) {
+			return true;
+		}
+
+		return exposedMethods.containsKey(method);
 	}
 
 	public ResponseEntity<Object> get(String idStr) {
@@ -91,8 +101,20 @@ public class ServiceWrapper {
 		return result;
 	}
 
-	public ResponseEntity<Page<Object>> search(Map<String, String[]> query) {
-		return null;
+	public ResponseEntity<Page<Object>> search(Map<String, String> queryString, Map<String, Object> queryMap) {
+		Page<Object> result;
+		if(repository instanceof JpaSpecificationExecutor) {
+			Specification specification = SearchUtil.generateSearchQuery(queryMap);
+			result = ((JpaSpecificationExecutor) repository).findAll(specification, new PageRequest(0, 10));
+		} else {
+			try {
+				result = (Page<Object>) invoke(RestEndpoint.Type.SEARCH, new Object[]{queryString, queryMap});
+			} catch (InvocationTargetException | IllegalAccessException e) {
+				logger.error("Unable to invoke service method", e);
+				return new ResponseEntity<Page<Object>>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		return new ResponseEntity<Page<Object>>(result, HttpStatus.OK);
 	}
 
 	public ResponseEntity<Object> edit(String id, Map<String, Object> patch) {
