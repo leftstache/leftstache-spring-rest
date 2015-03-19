@@ -64,9 +64,17 @@ public final class SearchUtil {
 
 						Predicate comparePredicate;
 						if(EQUAL_KEY.equals(nestedKey)) {
-							comparePredicate = cb.equal(root.get(key), nestedValue);
+							if(nestedValue == null) {
+								comparePredicate = cb.isNull(root.get(key));
+							} else {
+								comparePredicate = cb.equal(root.get(key), nestedValue);
+							}
 						} else if(NOT_EQUAL_KEY.equals(nestedKey)) {
-							comparePredicate = cb.notEqual(root.get(key), nestedValue);
+							if(nestedValue == null) {
+								comparePredicate = cb.isNotNull(root.get(key));
+							} else {
+								comparePredicate = cb.notEqual(root.get(key), nestedValue);
+							}
 						} else if(LESS_THAN_KEY.equals(nestedKey)) {
 							Expression<Comparable> path = root.get(key);
 							comparePredicate = cb.lessThan(path, (Comparable) nestedValue);
@@ -90,7 +98,11 @@ public final class SearchUtil {
 						}
 					}
 				} else {
-					currentPredicate = cb.equal(root.get(key), value);
+					if(value == null) {
+						currentPredicate = cb.isNull(root.get(key));
+					} else {
+						currentPredicate = cb.equal(root.get(key), value);
+					}
 				}
 
 				if (lastPredicate != null) {
