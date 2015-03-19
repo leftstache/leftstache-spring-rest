@@ -17,6 +17,7 @@ public @interface RestEndpoint {
 		GET,
 		SEARCH,
 		EDIT,
+		REPLACE,
 		CREATE,
 		DELETE
 	}

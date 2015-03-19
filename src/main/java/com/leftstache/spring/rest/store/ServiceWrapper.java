@@ -117,7 +117,11 @@ public class ServiceWrapper {
 		return new ResponseEntity<Page<Object>>(result, HttpStatus.OK);
 	}
 
-	public ResponseEntity<Object> edit(String id, Map<String, Object> patch) {
+	public ResponseEntity<Void> edit(String id, Map<String, Object> patch) {
+		return null;
+	}
+
+	public ResponseEntity<Void> replace(String id, Map<String, Object> body) {
 		return null;
 	}
 
