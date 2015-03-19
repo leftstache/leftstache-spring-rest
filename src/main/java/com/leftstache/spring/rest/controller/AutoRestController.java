@@ -1,17 +1,14 @@
 package com.leftstache.spring.rest.controller;
 
-import com.fasterxml.jackson.databind.*;
 import com.leftstache.spring.rest.core.*;
 import com.leftstache.spring.rest.store.*;
-import com.leftstache.spring.rest.util.*;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.data.domain.*;
-import org.springframework.data.repository.*;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
+import javax.servlet.http.*;
 import java.util.*;
 
 /**
@@ -19,51 +16,64 @@ import java.util.*;
  */
 @RestController
 public class AutoRestController {
-	private Logger logger = LoggerFactory.getLogger(AutoRestController.class);
-
 	private final ServiceStore serviceStore;
-	private final ObjectMapper objectMapper;
-	private final BeanPatcher beanPatcher;
 
 	@Autowired
-	public AutoRestController(ServiceStore serviceStore, ObjectMapper objectMapper, BeanPatcher beanPatcher) {
+	public AutoRestController(ServiceStore serviceStore) {
 		this.serviceStore = serviceStore;
-		this.objectMapper = objectMapper;
-		this.beanPatcher = beanPatcher;
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
-	public Page<?> search(
+	public ResponseEntity<Page<Object>> search(
 		@PathVariable("name") String name,
-		@RequestParam(value = "page", defaultValue = "0") int page,
-		@RequestParam(value = "pageSize", defaultValue = "100") int pageSize,
-		@RequestParam(value = "sortOrder", defaultValue = "ASC") String sortOrderStr,
-		@RequestParam(value = "sortBy", required = false) String[] sortBy
+		@RequestParam Map<String, String[]> queryString
 	) {
-		throw unsupportedException(name);
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service.supports(RestEndpoint.Type.SEARCH)) {
+			return service.search(queryString);
+		}
+
+		throw new RuntimeException("Unsupported endpoint: " + name);
 	}
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.GET)
-	public Object getById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
-		throw unsupportedException(name);
+	public ResponseEntity<Object> getById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service.supports(RestEndpoint.Type.GET)) {
+			return service.get(idRaw);
+		}
+
+		throw new RuntimeException("Unsupported endpoint: " + name);
 	}
 
 	@RequestMapping(value = "/{name}", method = RequestMethod.POST)
-	public ResponseEntity<Object> create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody) {
-		throw unsupportedException(name);
+	public ResponseEntity<Void> create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service.supports(RestEndpoint.Type.CREATE)) {
+			return service.create(request.getRequestURI(), requestBody);
+		}
+
+		throw new RuntimeException("Unsupported endpoint: " + name);
 	}
 
 	@RequestMapping(value = "/{name}/{id}", method = RequestMethod.DELETE)
-	public void deleteById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
-		throw unsupportedException(name);
+	public ResponseEntity<Void> deleteById(@PathVariable("name") String name, @PathVariable("id") String idRaw) {
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service.supports(RestEndpoint.Type.DELETE)) {
+			return service.delete(idRaw);
+		}
+
+		throw new RuntimeException("Unsupported endpoint: " + name);
 	}
 
 	@RequestMapping(value ="/{name}/{id}", method = RequestMethod.PATCH)
 	public ResponseEntity<Object> patch( @PathVariable("name") String name, @PathVariable("id") String idRaw, @RequestBody Map<String, Object> changes) {
-		throw unsupportedException(name);
+		ServiceWrapper service = serviceStore.getService(name);
+		if(service.supports(RestEndpoint.Type.EDIT)) {
+			return service.edit(idRaw, changes);
+		}
+
+		throw new RuntimeException("Unsupported endpoint: " + name);
 	}
 
-	private RuntimeException unsupportedException(String name) {
-		return new RuntimeException("Unsupported endpoint: " + name); // TODO
-	}
 }

@@ -17,7 +17,9 @@ public class ServiceBeanProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-
+		if(bean != null && bean instanceof RestfulService) {
+			serviceStore.registerService(bean);
+		}
 		return bean;
 	}
 

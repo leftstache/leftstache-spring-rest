@@ -1,9 +1,10 @@
 package com.leftstache.spring.rest.store;
 
-import com.leftstache.spring.rest.core.*;
+import com.leftstache.spring.rest.controller.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.context.*;
 import org.springframework.stereotype.*;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -12,26 +13,26 @@ import java.util.concurrent.*;
  */
 @Component
 public class ServiceStore {
-	private final Map<String, Class> entityTypeMap = new ConcurrentHashMap<>();
-	private final Map<String, Class> idTypeMap = new ConcurrentHashMap<>();
+	private Map<String, ServiceWrapper> serviceWrapperMap = new ConcurrentHashMap<>();
+	private final Converter converter;
+	private final ApplicationContext applicationContext;
+
+	@Autowired
+	public ServiceStore(Converter converter, ApplicationContext applicationContext) {
+		this.converter = converter;
+		this.applicationContext = applicationContext;
+	}
 
 	public void registerService(Object object) {
 		if(object == null) {
 			throw new NullPointerException("object");
 		}
 
-
+		ServiceWrapper serviceWrapper = ServiceWrapper.forObject(converter, applicationContext, object);
+		serviceWrapperMap.put(serviceWrapper.getName(), serviceWrapper);
 	}
 
-	public Class getEntityType(String name) {
-		return entityTypeMap.get(name);
-	}
-
-	public Class getIdType(String name) {
-		return idTypeMap.get(name);
-	}
-
-	public boolean supports(String name) {
-		return idTypeMap.containsKey(name);
+	public ServiceWrapper getService(String name) {
+		return serviceWrapperMap.get(name);
 	}
 }
