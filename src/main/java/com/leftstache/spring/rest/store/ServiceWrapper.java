@@ -20,7 +20,7 @@ import java.util.*;
  * @author Joel Johnson
  */
 public class ServiceWrapper {
-	private Logger logger = LoggerFactory.getLogger(ServiceWrapper.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServiceWrapper.class);
 
 	private final Converter converter;
 	private final BeanFactory beanFactory;
@@ -35,9 +35,9 @@ public class ServiceWrapper {
 	public static ServiceWrapper forObject(Converter converter, BeanFactory beanFactory, Object object) {
 		Class<?> serviceType = object.getClass();
 		Class<? extends PagingAndSortingRepository> repositoryType = ReflectionUtil.findGenericType(serviceType, RestfulService.class, 0);
-		Class<?> entityType = ReflectionUtil.findGenericType(serviceType, PagingAndSortingRepository.class, 0);
-		Class<? extends Serializable> idType = ReflectionUtil.findGenericType(serviceType, PagingAndSortingRepository.class, 1);
-		String name = Introspector.decapitalize(serviceType.getSimpleName());
+		Class<?> entityType = ReflectionUtil.findGenericType(repositoryType, PagingAndSortingRepository.class, 0);
+		Class<? extends Serializable> idType = ReflectionUtil.findGenericType(repositoryType, PagingAndSortingRepository.class, 1);
+		String name = Introspector.decapitalize(entityType.getSimpleName());
 
 		ImmutableMap.Builder<RestEndpoint.Type, Method> exposedMethods = ImmutableMap.<RestEndpoint.Type, Method>builder();
 
@@ -45,6 +45,7 @@ public class ServiceWrapper {
 		for (Method method : methods) {
 			RestEndpoint annotation = method.getAnnotation(RestEndpoint.class);
 			if(annotation != null) {
+				logger.info("registering {} endpoint for name '{}'", annotation.value(), name);
 				method.setAccessible(true);
 				exposedMethods.put(annotation.value(), method);
 			}

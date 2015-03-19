@@ -50,7 +50,7 @@ public class AutoRestController {
 	public ResponseEntity<Void> create(@PathVariable("name") String name, @RequestBody Map<String, Object> requestBody, HttpServletRequest request) {
 		ServiceWrapper service = serviceStore.getService(name);
 		if(service.supports(RestEndpoint.Type.CREATE)) {
-			return service.create(request.getRequestURI(), requestBody);
+			return service.create(request.getRequestURL().toString(), requestBody);
 		}
 
 		throw new RuntimeException("Unsupported endpoint: " + name);
